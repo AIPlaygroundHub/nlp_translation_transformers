@@ -29,12 +29,14 @@ def get_or_build_tokenizer(config, ds, lang):
 def sort_dataset_by_sentence_length(ds_raw, tokenizer_src, config):
     import numpy as np
     len_src_id = []
+    sorted_list = []
     for item in ds_raw:
-    src_ids = tokenizer_src.encode(item['translation'][config['lang_src']]).ids
-    len_src_id.append(len(src_ids))
+      src_ids = tokenizer_src.encode(item['translation'][config['lang_src']]).ids
+      len_src_id.append(len(src_ids))
     sorted_ids = np.argsort(len_src_id)
     sorted_list = [ds_raw[int(i)] for i in sorted_ids]
     return sorted_list
+
 def get_dataset(config):
     ds_raw = load_dataset('opus_books', f"{config['lang_src']}-{config['lang_tgt']}", split='train')
 
@@ -59,7 +61,8 @@ def get_dataset(config):
     print(f"Max length of the source target : {max_len_tgt}")
 
     ds_sorted = sort_dataset_by_sentence_length(ds_raw, tokenizer_src, config)
-
+    print(f'Length of sorted dataset: {len(ds_sorted)}')
+    print(f'Length of raw dataset: {len(ds_raw)}')
     train_ds_size = int(0.9 * len(ds_sorted))
     val_ds_size = len(ds_sorted) - train_ds_size
     train_ds_raw, val_ds_raw = random_split(ds_sorted, [train_ds_size, val_ds_size])
