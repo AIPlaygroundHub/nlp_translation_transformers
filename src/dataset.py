@@ -83,7 +83,7 @@ class CustomCollator():
             target_tokens = b['target_tokens']
             enc_num_padding_tokens = max_len_enc - len(b["enc_input_tokens"])
             dec_num_padding_tokens = max_len_dec - len(b["dec_input_tokens"])
-            print(f'Adding {enc_num_padding_tokens} pad tokens to sentence of length {len(b["enc_input_tokens"])}.')
+            # print(f'Adding {enc_num_padding_tokens} pad tokens to sentence of length {len(b["enc_input_tokens"])}.')
 
             encoder_input = torch.cat(
                 [
@@ -115,8 +115,10 @@ class CustomCollator():
 
             encoder_inputs.append(encoder_input)
             decoder_inputs.append(decoder_input)
-            encoder_masks.append((encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).int())
-            decoder_masks.append((decoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).int())
+            # print("encoder_input shape in ds", encoder_input.shape)
+            # print("mask shape", (encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).shape)
+            encoder_masks.append((encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).unsqueeze(0).int())
+            decoder_masks.append((decoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).unsqueeze(0).int())
 
             targets.append(target)
 

@@ -9,7 +9,7 @@ from model import build_transformer
 from pathlib import Path
 from tqdm import tqdm
 import wandb
-wandb.init(project="nlp_translation_transformers", config=get_config())
+# wandb.init(project="nlp_translation_transformers", config=get_config())
 
 def get_model(config, vocab_src_len, vocab_tgt_len):
     model = build_transformer(vocab_src_len, vocab_tgt_len, config['seq_len'],config['seq_len'], config['d_model'] )
@@ -49,7 +49,7 @@ def run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, max_len,
             wer = wer_metric(predicted, expected)
             bleu_metric = torchmetrics.BLEUScore()
             bleu = bleu_metric(predicted, expected)
-            wandb.log({'character error rate': cer, 'Word Error Rate': wer, 'BLEUScore': bleu})
+            # wandb.log({'character error rate': cer, 'Word Error Rate': wer, 'BLEUScore': bleu})
 
 def train_model(config):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -79,21 +79,23 @@ def train_model(config):
         for batch in batch_iterator:
 
             encoder_input = batch['encoder_input'].to(device) # (bs, seq_len)
+            print("encoder_input", encoder_input.shape)
             decoder_input = batch['decoder_input'].to(device) # (bs, seq_len)
             encoder_mask = batch['encoder_mask'].to(device) # (bs, 1, 1, seq_len)
+            print("encoder_mask", encoder_mask.shape)
             decoder_mask = batch['decoder_mask'].to(device) # (bs, 1, seq_len, seq_len)
 
             encoder_output = model.encode(encoder_input, encoder_mask) # (bs, seq_len, d_model)
             decoder_output = model.decode(encoder_output, encoder_mask, decoder_input, decoder_mask) # (bs, seq_len, d_model)
             proj_output = model.project(decoder_output) # (bs, seq_len, tgt_vocab_size)
 
-            label = batch['label'].to(device) # (bs, seq_len)
+            label = batch['target'].to(device) # (bs, seq_len)
 
             # view transforms (bs, seq_len, tgt_vocab_size) to (bs * seq_len, tgt_vocab_size)
             loss = loss_fn(proj_output.view(-1, tokenizer_tgt.get_vocab_size()), label.view(-1))
             batch_iterator.set_postfix({f"loss": f"{loss.item():6.3f}"})
 
-            wandb.log({"train_loss": loss.item()})
+            # wandb.log({"train_loss": loss.item()})
 
             loss.backward()
             optimizer.step() # update weights

@@ -65,7 +65,7 @@ def get_dataset(config):
     print(f'Length of raw dataset: {len(ds_raw)}')
     train_ds_size = int(0.9 * len(ds_sorted))
     val_ds_size = len(ds_sorted) - train_ds_size
-    train_ds_raw, val_ds_raw = random_split(ds_sorted, [train_ds_size, val_ds_size])
+    train_ds_raw, val_ds_raw = ds_sorted[:train_ds_size], ds_sorted[train_ds_size:]
 
     train_ds = BillingualDataset(train_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
     val_ds = BillingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
