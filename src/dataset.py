@@ -51,7 +51,7 @@ class BillingualDataset(Dataset):
 
             }
 
-def casual_mask(size):
+def causal_mask(size):
     mask = torch.triu(torch.ones((1, size, size)), diagonal = 1).type(torch.int)
     #This will get the upper traingle values
     return mask == 0
