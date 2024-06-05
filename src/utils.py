@@ -78,7 +78,7 @@ def get_dataloaders(config):
     train_ds, val_ds, tokenizer_src, tokenizer_tgt = get_dataset(config)
     custom_batch = CustomCollator(tokenizer_tgt=tokenizer_tgt)
     train_dataloader = DataLoader(train_ds, batch_size=config['batch_size'], shuffle=False, collate_fn=custom_batch)
-    val_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True)
+    val_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, collate_fn=custom_batch)
 
     return train_dataloader, val_dataloader, tokenizer_src, tokenizer_tgt
 

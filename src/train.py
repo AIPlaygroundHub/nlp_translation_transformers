@@ -9,7 +9,7 @@ from model import build_transformer
 from pathlib import Path
 from tqdm import tqdm
 import wandb
-# wandb.init(project="nlp_translation_transformers", config=get_config())
+wandb.init(project="nlp_translation_transformers", config=get_config())
 
 def get_model(config, vocab_src_len, vocab_tgt_len):
     model = build_transformer(vocab_src_len, vocab_tgt_len, config['seq_len'],config['seq_len'], config['d_model'] )
@@ -79,10 +79,8 @@ def train_model(config):
         for batch in batch_iterator:
 
             encoder_input = batch['encoder_input'].to(device) # (bs, seq_len)
-            print("encoder_input", encoder_input.shape)
             decoder_input = batch['decoder_input'].to(device) # (bs, seq_len)
             encoder_mask = batch['encoder_mask'].to(device) # (bs, 1, 1, seq_len)
-            print("encoder_mask", encoder_mask.shape)
             decoder_mask = batch['decoder_mask'].to(device) # (bs, 1, seq_len, seq_len)
 
             encoder_output = model.encode(encoder_input, encoder_mask) # (bs, seq_len, d_model)
