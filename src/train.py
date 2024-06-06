@@ -9,7 +9,7 @@ from model import build_transformer
 from pathlib import Path
 from tqdm import tqdm
 import wandb
-wandb.init(project="nlp_translation_transformers", config=get_config())
+# wandb.init(project="nlp_translation_transformers", config=get_config())
 
 def get_model(config, vocab_src_len, vocab_tgt_len):
     model = build_transformer(vocab_src_len, vocab_tgt_len, config['seq_len'],config['seq_len'], config['d_model'] )
@@ -71,6 +71,7 @@ def train_model(config):
         global_step = state['global_step']
 
     loss_fn = nn.CrossEntropyLoss(ignore_index=tokenizer_src.token_to_id('[PAD]'), label_smoothing=0.1)
+
     for epoch in range(initial_epoch, config['num_epochs']):
         model.train()
 
@@ -102,12 +103,12 @@ def train_model(config):
             global_step += 1
 
         run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, global_step)
-        model_filename = get_weights_file_path(config, f'{epoch:02d}')
-        torch.save({'model_state_dict': model.state_dict(),
-                    'epoch' : epoch,
-                    'optimizer_state_dict' : optimizer.state_dict(),
-                    'global_step' : global_step
-                    }, model_filename)
+        # model_filename = get_weights_file_path(config, f'{epoch:02d}')
+        # torch.save({'model_state_dict': model.state_dict(),
+        #             'epoch' : epoch,
+        #             'optimizer_state_dict' : optimizer.state_dict(),
+        #             'global_step' : global_step
+        #             }, model_filename)
 
 
 

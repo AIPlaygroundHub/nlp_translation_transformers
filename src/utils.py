@@ -49,28 +49,34 @@ def get_dataset(config):
     tokenizer_src = get_or_build_tokenizer(config, ds_raw, src_lang)
     tokenizer_tgt = get_or_build_tokenizer(config, ds_raw, tgt_lang)
 
-    max_len_src = 0
-    max_len_tgt = 0
-    for item in ds_raw:
-        src_ids = tokenizer_src.encode(item['translation'][src_lang]).ids
-        tgt_ids = tokenizer_tgt.encode(item['translation'][tgt_lang]).ids
-        max_len_src = max(max_len_src, len(src_ids))
-        max_len_tgt = max(max_len_tgt, len(tgt_ids))
+    # max_len_src = 0
+    # max_len_tgt = 0
+    # for item in ds_raw:
+    #     src_ids = tokenizer_src.encode(item['translation'][src_lang]).ids
+    #     tgt_ids = tokenizer_tgt.encode(item['translation'][tgt_lang]).ids
+    #     max_len_src = max(max_len_src, len(src_ids))
+    #     max_len_tgt = max(max_len_tgt, len(tgt_ids))
+    #
+    # print(f"Max length of the source sentence : {max_len_src}")
+    # print(f"Max length of the source target : {max_len_tgt}")
+    train_ds_size = int(0.9 * len(ds_raw))
+    val_ds_size = len(ds_raw) - train_ds_size
+    train_ds_raw, val_ds_raw = random_split(ds_raw, [train_ds_size, val_ds_size])
 
-    print(f"Max length of the source sentence : {max_len_src}")
-    print(f"Max length of the source target : {max_len_tgt}")
-
-    ds_sorted = sort_dataset_by_sentence_length(ds_raw, tokenizer_src, config)
+    ds_sorted = sort_dataset_by_sentence_length(train_ds_raw, tokenizer_src, config)
     print(f'Length of sorted dataset: {len(ds_sorted)}')
     print(f'Length of raw dataset: {len(ds_raw)}')
-    train_ds_size = int(0.9 * len(ds_sorted))
-    val_ds_size = len(ds_sorted) - train_ds_size
-    train_ds_raw, val_ds_raw = ds_sorted[:train_ds_size], ds_sorted[train_ds_size:]
 
-    train_ds = BillingualDataset(train_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
-    val_ds = BillingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
 
-    return train_ds, val_ds, tokenizer_src, tokenizer_tgt
+    train_dataset = BillingualDataset(ds_sorted, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
+    val_dataset = BillingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
+    if config["overfit"]:
+        print("Overfitting to 1 sample")
+        train_ds = torch.utils.data.Subset(train_dataset, [25000])
+        val_ds = torch.utils.data.Subset(train_dataset, [25000])
+        return train_ds, val_ds, tokenizer_src, tokenizer_tgt
+
+    return train_dataset, val_dataset, tokenizer_src, tokenizer_tgt
 
 
 def get_dataloaders(config):
@@ -78,7 +84,7 @@ def get_dataloaders(config):
     train_ds, val_ds, tokenizer_src, tokenizer_tgt = get_dataset(config)
     custom_batch = CustomCollator(tokenizer_tgt=tokenizer_tgt)
     train_dataloader = DataLoader(train_ds, batch_size=config['batch_size'], shuffle=False, collate_fn=custom_batch)
-    val_dataloader = DataLoader(val_ds, batch_size=1, shuffle=True, collate_fn=custom_batch)
+    val_dataloader = DataLoader(val_ds, batch_size=1, shuffle=False, collate_fn=custom_batch)
 
     return train_dataloader, val_dataloader, tokenizer_src, tokenizer_tgt
 
