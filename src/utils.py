@@ -72,7 +72,7 @@ def get_dataset(config):
     val_dataset = BillingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
     if config["overfit"]:
         print("Overfitting to 1 sample")
-        train_ds = torch.utils.data.Subset(train_dataset, [25000,25001, 25002, 25004, 25005])
+        train_ds = torch.utils.data.Subset(train_dataset, [25000]*5)
         val_ds = torch.utils.data.Subset(train_dataset, [25000])
         return train_ds, val_ds, tokenizer_src, tokenizer_tgt
 

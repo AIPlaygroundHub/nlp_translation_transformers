@@ -82,8 +82,8 @@ def train_model(config):
 
             encoder_input = batch['encoder_input'].to(device) # (bs, seq_len)
             decoder_input = batch['decoder_input'].to(device) # (bs, seq_len)
-            encoder_mask = batch['encoder_mask'].to(device) # (bs, 1, 1, seq_len)
-            decoder_mask = batch['decoder_mask'].to(device) # (bs, 1, seq_len, seq_len)
+            encoder_mask = batch['encoder_mask'].unsqueeze(1).to(device) # (bs, 1, 1, seq_len)
+            decoder_mask = batch['decoder_mask'].unsqueeze(1).to(device) # (bs, 1, seq_len, seq_len)
 
             encoder_output = model.encode(encoder_input, encoder_mask) # (bs, seq_len, d_model)
             decoder_output = model.decode(encoder_output, encoder_mask, decoder_input, decoder_mask) # (bs, seq_len, d_model)
