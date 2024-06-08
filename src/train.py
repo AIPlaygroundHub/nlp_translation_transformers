@@ -44,11 +44,11 @@ def run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, max_len,
                 print("TARGET", target_text)
                 print("PREDICTED", model_out_text)
 
-            cer_metric = torchmetrics.CharErrorRate()
+            cer_metric = torchmetrics.text.CharErrorRate()
             cer = cer_metric(predicted, expected)
-            wer_metric = torchmetrics.WordErrorRate()
+            wer_metric = torchmetrics.text.WordErrorRate()
             wer = wer_metric(predicted, expected)
-            bleu_metric = torchmetrics.BLEUScore()
+            bleu_metric = torchmetrics.text.BLEUScore()
             bleu = bleu_metric(predicted, expected)
             wandb.log({'character error rate': cer, 'Word Error Rate': wer, 'BLEUScore': bleu})
 
@@ -103,7 +103,7 @@ def train_model(config):
 
             global_step += 1
 
-        # run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, global_step)
+        run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, global_step)
         model_filename = get_weights_file_path(config, f'{epoch:02d}')
         torch.save({'model_state_dict': model.state_dict(),
                     'epoch' : epoch,
