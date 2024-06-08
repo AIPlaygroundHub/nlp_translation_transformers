@@ -72,7 +72,7 @@ def get_dataset(config):
     val_dataset = BillingualDataset(val_ds_raw, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len)
     if config["overfit"]:
         print("Overfitting to 1 sample")
-        train_ds = torch.utils.data.Subset(train_dataset, [25000])
+        train_ds = torch.utils.data.Subset(train_dataset, [25000,25001, 25002, 25004, 25005])
         val_ds = torch.utils.data.Subset(train_dataset, [25000])
         return train_ds, val_ds, tokenizer_src, tokenizer_tgt
 
@@ -145,3 +145,10 @@ def load_next_batch(val_dataloader, device, vocab_src, vocab_tgt, model, config)
     return batch, encoder_input_tokens, decoder_input_tokens
 
 
+if __name__ == "__main__":
+    from config_file import  get_config
+    config = get_config()
+    train_loader, val_loader, src_token, tgt_tokenizer = get_dataloaders(config)
+    next(iter(train_loader))
+    next(iter(train_loader))
+    next(iter(train_loader))

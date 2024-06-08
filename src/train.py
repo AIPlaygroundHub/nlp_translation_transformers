@@ -9,7 +9,8 @@ from model import build_transformer
 from pathlib import Path
 from tqdm import tqdm
 import wandb
-# wandb.init(project="nlp_translation_transformers", config=get_config())
+wandb.init(project="nlp_translation_transformers", config=get_config(), mode="offline")
+torch.manual_seed(42)
 
 def get_model(config, vocab_src_len, vocab_tgt_len):
     model = build_transformer(vocab_src_len, vocab_tgt_len, config['seq_len'],config['seq_len'], config['d_model'] )
@@ -49,7 +50,7 @@ def run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, max_len,
             wer = wer_metric(predicted, expected)
             bleu_metric = torchmetrics.BLEUScore()
             bleu = bleu_metric(predicted, expected)
-            # wandb.log({'character error rate': cer, 'Word Error Rate': wer, 'BLEUScore': bleu})
+            wandb.log({'character error rate': cer, 'Word Error Rate': wer, 'BLEUScore': bleu})
 
 def train_model(config):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -94,7 +95,7 @@ def train_model(config):
             loss = loss_fn(proj_output.view(-1, tokenizer_tgt.get_vocab_size()), label.view(-1))
             batch_iterator.set_postfix({f"loss": f"{loss.item():6.3f}"})
 
-            # wandb.log({"train_loss": loss.item()})
+            wandb.log({"train_loss": loss.item()})
 
             loss.backward()
             optimizer.step() # update weights
@@ -102,13 +103,13 @@ def train_model(config):
 
             global_step += 1
 
-        run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, global_step)
-        # model_filename = get_weights_file_path(config, f'{epoch:02d}')
-        # torch.save({'model_state_dict': model.state_dict(),
-        #             'epoch' : epoch,
-        #             'optimizer_state_dict' : optimizer.state_dict(),
-        #             'global_step' : global_step
-        #             }, model_filename)
+        # run_validation(model, val_dataloader, tokenizer_src, tokenizer_tgt, config['seq_len'], device, global_step)
+        model_filename = get_weights_file_path(config, f'{epoch:02d}')
+        torch.save({'model_state_dict': model.state_dict(),
+                    'epoch' : epoch,
+                    'optimizer_state_dict' : optimizer.state_dict(),
+                    'global_step' : global_step
+                    }, model_filename)
 
 
 

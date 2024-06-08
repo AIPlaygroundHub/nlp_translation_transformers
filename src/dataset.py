@@ -19,7 +19,7 @@ class BillingualDataset(Dataset):
     def __init__(self, ds, tokenizer_src, tokenizer_tgt, src_lang, tgt_lang, seq_len):
         super().__init__()
         self.seq_len = seq_len
-        self.ds = ds
+        self.ds = ds # list of dicts [{'id': '8300', 'translation' : {'en' : ..., 'it' : ...}}, ...]
         self.tokenizer_src = tokenizer_src
         self.tokenizer_tgt = tokenizer_tgt
         self.src_lang = src_lang
@@ -57,7 +57,7 @@ def causal_mask(size):
     return mask == 0
 
 
-class CustomCollator():
+class CustomCollator:
     def __init__(self, **params):
         tokenizer_tgt = params['tokenizer_tgt']
         self.sos_token = torch.tensor([tokenizer_tgt.token_to_id("[SOS]")], dtype=torch.int64)
@@ -65,7 +65,7 @@ class CustomCollator():
         self.pad_token = torch.tensor([tokenizer_tgt.token_to_id("[PAD]")], dtype=torch.int64)
 
     def __call__(self, batch):
-
+        print("CustomCollator is called")
         max_len_enc = max(len(x["enc_input_tokens"]) for x in batch)
         max_len_dec = max(len(x["dec_input_tokens"]) for x in batch)
 
@@ -117,8 +117,8 @@ class CustomCollator():
             decoder_inputs.append(decoder_input)
             # print("encoder_input shape in ds", encoder_input.shape)
             # print("mask shape", (encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).shape)
-            encoder_masks.append((encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).unsqueeze(0).int())
-            decoder_masks.append((decoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).unsqueeze(0).int())
+            encoder_masks.append((encoder_input != self.pad_token).unsqueeze(0).unsqueeze(0).int())
+            decoder_masks.append((decoder_input != self.pad_token).unsqueeze(0).int() & causal_mask(decoder_input.size(0)))
 
             targets.append(target)
 
